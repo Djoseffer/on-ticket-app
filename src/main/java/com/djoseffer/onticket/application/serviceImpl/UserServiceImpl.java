@@ -1,12 +1,10 @@
 package com.djoseffer.onticket.application.serviceImpl;
 
-import com.djoseffer.onticket.domain.User;
+import com.djoseffer.onticket.adapters.in.api.dto.UserRegisterDto;
 
 public interface UserServiceImpl {
 
-    void registerUser(User user);
+    void registerUser(UserRegisterDto userDto);
 
-    void loginUser(String email, String password);
-
-    void buyTicket(Long userId, Long eventId, Long ticketId);
+    void buyTicket(String userId, String eventId, String ticketId);
 }

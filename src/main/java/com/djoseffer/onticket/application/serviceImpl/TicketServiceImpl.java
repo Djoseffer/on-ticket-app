@@ -8,6 +8,6 @@ public interface TicketServiceImpl {
 
     List<Ticket> findTicketsByEvent();
 
-    Ticket purchaseTicket(Long eventId, Long ticketId, Long UserId);
+    Ticket purchaseTicket(String eventId, String ticketId, String UserId);
 }
 

@@ -21,12 +21,12 @@ public class MongoTicketRepository implements TicketRepository {
     }
 
     @Override
-    public Optional<Ticket> findById(Long id) {
+    public Optional<Ticket> findById(String id) {
         return Optional.ofNullable(mongoTemplate.findById(id, Ticket.class));
     }
 
     @Override
-    public List<Ticket> findByEventId(Long eventId) {
+    public List<Ticket> findByEventId(String eventId) {
         return List.of();
     }
 }

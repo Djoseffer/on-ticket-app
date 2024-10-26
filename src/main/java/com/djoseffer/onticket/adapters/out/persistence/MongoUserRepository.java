@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,7 +24,7 @@ public class MongoUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(String id) {
         return Optional.ofNullable(mongoTemplate.findById(id, User.class));
     }
 
@@ -32,4 +33,7 @@ public class MongoUserRepository implements UserRepository {
         return Optional.ofNullable(mongoTemplate.findOne(Query.query(Criteria.where("email").is(email)), User.class));
     }
 
+    public List<User> findAll(){
+        return mongoTemplate.findAll(User.class);
+    }
 }

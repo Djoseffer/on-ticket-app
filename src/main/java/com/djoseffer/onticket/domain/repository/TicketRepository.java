@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface TicketRepository {
     void save(Ticket ticket);
 
-    Optional<Ticket> findById(Long id);
+    Optional<Ticket> findById(String id);
 
-    List<Ticket> findByEventId(Long eventId);
+    List<Ticket> findByEventId(String eventId);
 }
