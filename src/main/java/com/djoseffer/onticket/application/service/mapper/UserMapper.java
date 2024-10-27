@@ -18,7 +18,6 @@ public interface UserMapper {
     @Mapping(target = "password", source = "password")
     User convertUserRegisterDtotoUser(UserRegisterDto userRegisterDto);
 
-
     @Mapping(target = "firstName", source = "firstName")
     @Mapping(target = "lastName", source = "lastName")
     @Mapping(target = "email", source = "email")

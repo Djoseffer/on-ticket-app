@@ -1,13 +1,19 @@
 package com.djoseffer.onticket.application.serviceImpl;
 
-import com.djoseffer.onticket.domain.Ticket;
+import com.djoseffer.onticket.adapters.in.api.dto.TicketBuyDto;
+import com.djoseffer.onticket.adapters.in.api.dto.TicketRequestDto;
+import com.djoseffer.onticket.adapters.in.api.dto.TicketResponseDto;
+import com.djoseffer.onticket.adapters.in.api.dto.TicketsPurchasedDto;
 
 import java.util.List;
 
 public interface TicketServiceImpl {
 
-    List<Ticket> findTicketsByEvent();
+    List<TicketResponseDto> findTicketsByEvent(String eventId);
 
-    Ticket purchaseTicket(String eventId, String ticketId, String UserId);
+    TicketResponseDto createTicket(String eventId, TicketRequestDto ticketDto);
+
+    TicketsPurchasedDto ticketBuy(String eventId, TicketBuyDto ticket);
+
 }
 

@@ -12,6 +12,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -33,7 +34,7 @@ public class Event implements Serializable {
     private Long ticketQuantity;
     private BigDecimal ticketPrice;
     @DBRef
-    private List<Ticket> eventTickets;
+    private List<Ticket> eventTickets = new ArrayList<>();
 
     public void addTicket(Ticket ticket) {
 

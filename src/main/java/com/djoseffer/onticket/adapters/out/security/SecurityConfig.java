@@ -38,6 +38,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST,"/api/events/create").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/api/ticket//{eventId}/create").authenticated()
                 .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
