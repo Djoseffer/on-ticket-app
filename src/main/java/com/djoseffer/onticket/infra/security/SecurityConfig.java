@@ -1,4 +1,4 @@
-package com.djoseffer.onticket.adapters.out.security;
+package com.djoseffer.onticket.infra.security;
 
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;

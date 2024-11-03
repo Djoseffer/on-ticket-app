@@ -4,13 +4,13 @@ import com.djoseffer.onticket.adapters.in.api.dto.TicketBuyDto;
 import com.djoseffer.onticket.adapters.in.api.dto.TicketRequestDto;
 import com.djoseffer.onticket.adapters.in.api.dto.TicketResponseDto;
 import com.djoseffer.onticket.adapters.in.api.dto.TicketsPurchasedDto;
+import com.djoseffer.onticket.adapters.in.api.producer.KafkaProducer;
 import com.djoseffer.onticket.adapters.out.persistence.MongoEventRepository;
 import com.djoseffer.onticket.adapters.out.persistence.MongoTicketRepository;
 import com.djoseffer.onticket.adapters.out.persistence.MongoUserRepository;
 import com.djoseffer.onticket.application.service.mapper.TicketMapper;
 import com.djoseffer.onticket.application.serviceImpl.TicketServiceImpl;
 import com.djoseffer.onticket.domain.Event;
-import com.djoseffer.onticket.domain.Ticket;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -24,12 +24,14 @@ public class TicketService implements TicketServiceImpl {
     private final MongoEventRepository eventRepository;
     private final AuthService authService;
     private final MongoUserRepository userRepository;
+    private final KafkaProducer kafkaProducer;
 
-    public TicketService(MongoTicketRepository ticketRepository, MongoEventRepository eventRepository, AuthService authService, MongoUserRepository userRepository) {
+    public TicketService(MongoTicketRepository ticketRepository, MongoEventRepository eventRepository, AuthService authService, MongoUserRepository userRepository, KafkaProducer kafkaProducer) {
         this.ticketRepository = ticketRepository;
         this.eventRepository = eventRepository;
         this.authService = authService;
         this.userRepository = userRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     private String getUserByToken() {
@@ -68,6 +70,9 @@ public class TicketService implements TicketServiceImpl {
         Event ticket = TicketMapper.INSTANCE.convertTickebuyDtoToTicket(ticketBuy);
         ticket.setEventName(event.getEventName());
         ticket.setTicketPrice(event.getTicketPrice());
-        return TicketMapper.INSTANCE.convertTicketPurchaseDtoToTicket(ticket);
+
+        kafkaProducer.sendTicketsSold(eventId, ticket.getTicketQuantity());
+        return TicketMapper.INSTANCE.convertTicketToTicketPurchaseDto(ticket);
     }
+
 }

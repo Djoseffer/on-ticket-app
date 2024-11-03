@@ -5,6 +5,7 @@ import com.djoseffer.onticket.adapters.in.api.dto.TicketRequestDto;
 import com.djoseffer.onticket.adapters.in.api.dto.TicketResponseDto;
 import com.djoseffer.onticket.adapters.in.api.dto.TicketsPurchasedDto;
 import com.djoseffer.onticket.application.service.TicketService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

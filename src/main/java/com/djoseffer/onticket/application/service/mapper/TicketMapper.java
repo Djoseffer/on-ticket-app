@@ -8,7 +8,6 @@ import com.djoseffer.onticket.domain.Event;
 import com.djoseffer.onticket.domain.Ticket;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
@@ -36,7 +35,7 @@ public interface TicketMapper {
     @Mapping(target = "ticketQuantity", source = "ticketQuantity")
     @Mapping(target = "totalValue", expression = "java(calculateTotalValue(eventTicket.getTicketPrice(), eventTicket.getTicketQuantity()))")
     @Mapping(target = "message", expression = "java(generateMessage(ticketQuantity))")
-    TicketsPurchasedDto convertTicketPurchaseDtoToTicket(Event eventTicket);
+    TicketsPurchasedDto convertTicketToTicketPurchaseDto(Event eventTicket);
 
 
     default BigDecimal calculateTotalValue(BigDecimal price, Long ticketQuantity) {
