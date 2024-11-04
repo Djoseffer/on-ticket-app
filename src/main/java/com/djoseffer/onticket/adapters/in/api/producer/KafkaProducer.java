@@ -12,8 +12,8 @@ public class KafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-
     public void sendTicketsSold(String eventId, Long quantitySold) {
-        kafkaTemplate.send(eventId, quantitySold.toString());
+        String message = String.format("{\"eventId\":\"%s\",\"quantitySold\":%d}", eventId, quantitySold);
+        kafkaTemplate.send("tickets-sold", message);
     }
 }

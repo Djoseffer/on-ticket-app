@@ -11,11 +11,16 @@ import com.djoseffer.onticket.adapters.out.persistence.MongoUserRepository;
 import com.djoseffer.onticket.application.service.mapper.TicketMapper;
 import com.djoseffer.onticket.application.serviceImpl.TicketServiceImpl;
 import com.djoseffer.onticket.domain.Event;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TicketService implements TicketServiceImpl {
@@ -25,13 +30,22 @@ public class TicketService implements TicketServiceImpl {
     private final AuthService authService;
     private final MongoUserRepository userRepository;
     private final KafkaProducer kafkaProducer;
+    private final Counter countTicketsSold;
+    private final Counter countErrors;
+    private final AtomicInteger ticketsAvailable;
+    private final Timer salesTime;
 
-    public TicketService(MongoTicketRepository ticketRepository, MongoEventRepository eventRepository, AuthService authService, MongoUserRepository userRepository, KafkaProducer kafkaProducer) {
+    public TicketService(MongoTicketRepository ticketRepository, MongoEventRepository eventRepository, AuthService authService, MongoUserRepository userRepository, KafkaProducer kafkaProducer, MeterRegistry meterRegistry) {
         this.ticketRepository = ticketRepository;
         this.eventRepository = eventRepository;
         this.authService = authService;
         this.userRepository = userRepository;
         this.kafkaProducer = kafkaProducer;
+        this.countTicketsSold = meterRegistry.counter("total_sales_completed");
+        this.countErrors = meterRegistry.counter("total_errors");
+        this.salesTime = Timer.builder("sales_time_summary").publishPercentiles(0.5, 0.95, 0.99).register(meterRegistry);
+        this.ticketsAvailable = new AtomicInteger();
+        Gauge.builder("tickets_available", ticketsAvailable, AtomicInteger::get).register(meterRegistry);
     }
 
     private String getUserByToken() {
@@ -66,13 +80,30 @@ public class TicketService implements TicketServiceImpl {
     }
 
     public TicketsPurchasedDto ticketBuy(String eventId, TicketBuyDto ticketBuy) {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
-        Event ticket = TicketMapper.INSTANCE.convertTickebuyDtoToTicket(ticketBuy);
-        ticket.setEventName(event.getEventName());
-        ticket.setTicketPrice(event.getTicketPrice());
+        try {
+            return salesTime.record(() -> {
+                Event event = eventRepository.findById(eventId)
+                        .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        kafkaProducer.sendTicketsSold(eventId, ticket.getTicketQuantity());
-        return TicketMapper.INSTANCE.convertTicketToTicketPurchaseDto(ticket);
+                Event ticket = TicketMapper.INSTANCE.convertTickebuyDtoToTicket(ticketBuy);
+                ticket.setEventName(event.getEventName());
+                ticket.setTicketPrice(event.getTicketPrice());
+
+                int totalTicketsAvailable = ticket.getEventTickets().size();
+                if (ticketsAvailable.get() < totalTicketsAvailable) {
+                    throw new RuntimeException("Ticket already sold");
+                }
+
+                kafkaProducer.sendTicketsSold(eventId, ticket.getTicketQuantity());
+                countTicketsSold.increment();
+                ticketsAvailable.decrementAndGet();
+
+                return TicketMapper.INSTANCE.convertTicketToTicketPurchaseDto(ticket);
+            });
+        } catch (Exception e) {
+            countErrors.increment();
+            throw e;
+        }
     }
 
 }
